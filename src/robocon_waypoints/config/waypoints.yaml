@@ -1,0 +1,30 @@
+/robocon_nav_node:
+  ros__parameters:
+    # 标定参考线绝对 X 坐标 (A)
+    ref_x_coordinate: 2.0
+    
+    # 触发校准的色度传感器状态值
+    color_trigger_val: 1
+
+    # 路径点及对应行为列表
+    waypoints:
+      - x: 1.5
+        y: 0.0
+        yaw: 0.0
+        target_height: 0.15
+        wait_time: 1.0
+      - x: 1.5
+        y: 1.5
+        yaw: 1.57
+        target_height: 0.40
+        wait_time: 2.0
+      - x: 0.0
+        y: 1.5
+        yaw: 3.14
+        target_height: 0.0
+        wait_time: 1.0
+      - x: 0.0
+        y: 0.0
+        yaw: 0.0
+        target_height: 0.0
+        wait_time: 1.0
