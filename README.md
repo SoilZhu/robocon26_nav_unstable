@@ -1,6 +1,6 @@
 # Robocon 26 顺序路径点导航系统 (ROS 2 Humble)
 
-> ## 本项目由 Gemini Vibe 而成，未经验证，仅提供思路验证
+> ## 本项目由 Gemini Vibe 而成，未经测试，仅提供思路验证
 
 本项目为 Robocon 26 参赛机器人开发的顺序路径点导航与控制系统，包含传感器静态 TF 广播解耦、下位机串口通信模块以及基于状态机的路径巡航与色度位置校准算法。
 
@@ -14,6 +14,7 @@ robocon26/
     ├── rm_serial_driver          # 串口通信包 (底盘速度与高度控制收发、色度状态发布)
     ├── robocon_tf_broadcaster    # 静态 TF 广播包 (管理雷达与色度传感器安装偏置)
     ├── robocon_waypoints         # 路径点数据包 (管理导航路径与到位参考坐标参数)
+    ├── robocon_gazebo            # Gazebo 仿真原型验证包 (Mock 硬件外设与 TF 坐标发布)
     └── robocon_nav               # 顺序路径点导航包 (直线控制速度发生器与坐标实时校准)
 ```
 
@@ -61,17 +62,26 @@ robocon26/
   - **接收数据包 (单片机 -> ROS 2，共 9 字节)**：
     `[帧头 0x5A (1B) | height_reached (1B) | color_sensor_state (1B) | yaw (4B) | CRC16 (2B)]`
 
+### 3.5 Gazebo 原型验证包 (`robocon_gazebo`)
+- **作用**：完全解耦的仿真与测试环境，允许开发者在没有真实机器人硬件及 Point-LIO 雷达里程计运行的情况下，对 `robocon_nav` 逻辑进行快速闭合原型验证。
+- **关键机制**：
+  - **里程计 TF 桥接**：订阅 Gazebo 内置的底盘里程计 `/odom`，并根据配置的传感器物理偏置，动态广播 `camera_init` -> `aft_mapped` 变换，完全对齐真实 Point-LIO。
+  - **高度机构 Mock**：订阅 `/target_height` 指令，仿真执行电机运动延迟，并在到达指定位置后自动向 `/height_reached` 话题广播到位信号。
+  - **色度校准线 Mock**：计算色度传感器在仿真世界中的坐标，在穿过预设线位置时自动发布 `/color_sensor_state` 信号，完全闭环测试导航的绝对 X 轴标定与补偿逻辑。
+
 ---
 
 ## 4. 编译与运行指南
 
-### 3.1 编译工作空间
+### 4.1 编译工作空间
 在您的 ROS 2 终端中运行：
 ```bash
 colcon build --symlink-install
 ```
 
-### 3.2 运行指令
+### 4.2 运行指令
+
+#### 选项 A：在真实机器人上运行
 1. **启动串口通信**：
    ```bash
    ros2 launch rm_serial_driver serial_driver.launch.py
@@ -83,6 +93,16 @@ colcon build --symlink-install
 3. **启动导航系统**（会自动引入并加载静态 TF 广播）：
    ```bash
    ros2 launch robocon_nav nav.launch.py
+   ```
+
+#### 选项 B：在 Gazebo 仿真环境运行 (原型验证)
+1. **启动仿真并级联拉起导航系统**（一键拉起 Gazebo、机器人描述、Mock 节点、静态 TF 广播与导航）：
+   ```bash
+   ros2 launch robocon_gazebo sim.launch.py
+   ```
+2. **（可选）仅运行仿真与 Mock 桥接节点**（不启动导航，用于单独调试）：
+   ```bash
+   ros2 launch robocon_gazebo sim.launch.py run_nav:=false
    ```
 
 ### 4.3 路径点与安装参数微调
