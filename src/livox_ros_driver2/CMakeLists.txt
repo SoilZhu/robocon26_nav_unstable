@@ -191,6 +191,13 @@ else(ROS_EDITION STREQUAL "ROS2")
   cmake_minimum_required(VERSION 3.14)
   project(livox_ros_driver2)
 
+  # Detect ROS distribution if not specified
+  if(NOT DEFINED DISTRO_ROS)
+    if(DEFINED ENV{ROS_DISTRO})
+      set(DISTRO_ROS $ENV{ROS_DISTRO})
+    endif()
+  endif()
+
   # Default to C99
   if(NOT CMAKE_C_STANDARD)
     set(CMAKE_C_STANDARD 99)
