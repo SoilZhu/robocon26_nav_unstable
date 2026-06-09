@@ -132,7 +132,10 @@ class RoboconNavNode(Node):
         try:
             with open(self.waypoints_file, 'r') as f:
                 data = yaml.safe_load(f)
-                if 'waypoints' in data:
+                if data and '/robocon_nav_node' in data and 'ros__parameters' in data['/robocon_nav_node'] and 'waypoints' in data['/robocon_nav_node']['ros__parameters']:
+                    self.waypoints = data['/robocon_nav_node']['ros__parameters']['waypoints']
+                    self.get_logger().info(f"Successfully loaded {len(self.waypoints)} waypoints from {self.waypoints_file}")
+                elif data and 'waypoints' in data:
                     self.waypoints = data['waypoints']
                     self.get_logger().info(f"Successfully loaded {len(self.waypoints)} waypoints from {self.waypoints_file}")
                 else:
