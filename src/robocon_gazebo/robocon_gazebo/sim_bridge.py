@@ -5,7 +5,6 @@ from geometry_msgs.msg import TransformStamped, Twist
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool, Float32, UInt8
 import tf2_ros
-from tf2_geometry_msgs import TransformException
 
 class SimBridgeNode(Node):
     def __init__(self):
